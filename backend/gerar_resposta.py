@@ -1,17 +1,19 @@
 import os
 from dotenv import load_dotenv
-import openai
+from openai import OpenAI
 from bible_loader import carregar_biblia, buscar_versiculos_por_palavra_chave
 
 # Carrega variáveis do .env
 load_dotenv()
 
-# CONFIGURAÇÃO PARA OPENROUTER
-openai.api_base = "https://openrouter.ai/api/v1"
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Criação do cliente com base customizada (OpenRouter)
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    base_url="https://openrouter.ai/api/v1"
+)
 
 # Teste de carregamento da chave (DEBUG)
-if not openai.api_key:
+if not os.getenv("OPENAI_API_KEY"):
     print("❌ ERRO: OPENAI_API_KEY não foi carregada!")
 
 # Carrega a Bíblia
@@ -39,11 +41,11 @@ Usuário: "{mensagem_usuario}"
 Deus:
 """
 
-    resposta = openai.ChatCompletion.create(
+    resposta = client.chat.completions.create(
         model="openchat/openchat-3.5-0106",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
         max_tokens=300
     )
 
-    return resposta.choices[0].message["content"].strip()
+    return resposta.choices[0].message.content.strip()
